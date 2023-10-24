@@ -10,6 +10,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:ui' as ui;
+
 import 'src/proxy_binary_messenger.dart' show ProxyBinaryMessenger;
 
 export 'package:turf/helpers.dart';
@@ -50,3 +53,7 @@ part 'src/style/source/raster_source.dart';
 part 'src/style/source/rasterdem_source.dart';
 part 'src/style/source/vector_source.dart';
 part 'src/style/style.dart';
+part 'src/style/feature/feature.dart';
+part 'src/style/location.dart';
+part 'src/style/source/feature_source.dart';
+part 'src/style/expressions/expressions.dart';

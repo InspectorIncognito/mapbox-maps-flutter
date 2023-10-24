@@ -20,8 +20,11 @@ import 'point_annotations.dart';
 import 'projection.dart';
 import 'style.dart';
 import 'gestures.dart';
+import 'transapp.dart';
+import 'utils.dart';
 
 final List<ExamplePage> _allPages = <ExamplePage>[
+  TransappPage(),
   FullMapPage(),
   StylePage(),
   CameraPage(),
@@ -51,7 +54,7 @@ class MapsDemo extends StatelessWidget {
   //
   // Alternatively you can replace `String.fromEnvironment("ACCESS_TOKEN")`
   // in the following line with your access token directly.
-  static const String ACCESS_TOKEN = String.fromEnvironment("ACCESS_TOKEN");
+  static const String ACCESS_TOKEN = "pk.eyJ1IjoidHJhbnNhcHAiLCJhIjoiY2lzdGloNmh6MDAzNjJ1dGt5ZnhyNHpucSJ9.Iz4LN0PlnCDawJLgbOywoA";
 
   void _pushPage(BuildContext context, ExamplePage page) async {
     Navigator.of(context).push(MaterialPageRoute<void>(
@@ -63,6 +66,7 @@ class MapsDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeUtil.devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     return Scaffold(
       appBar: AppBar(title: const Text('MapboxMaps examples')),
       body: ACCESS_TOKEN.isEmpty || ACCESS_TOKEN.contains("YOUR_TOKEN")

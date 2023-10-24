@@ -115,3 +115,35 @@ Future<http.Response> fetchDirectionRoute(
       "$MAPBOX_DIRECTIONS_ENDPOINT${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&access_token=$accessToken");
   return http.get(uri);
 }
+
+class SizeUtil {
+
+  //logic size in device
+  static double _devicePixelRatio = 0;
+
+  static set devicePixelRatio(devicePixelRatio) {
+    _devicePixelRatio = devicePixelRatio;
+  }
+
+  static get devicePixelRatio => _devicePixelRatio;
+
+  //@param w is the design w;
+  static double getAxisX(double w) {
+    return (w * _devicePixelRatio);
+  }
+
+  // the y direction
+  static double getAxisY(double h) {
+    return (h * _devicePixelRatio);
+  }
+
+  static Offset convert(Offset off) {
+    return Offset(
+        off.dx.sign * getAxisX(off.dx), off.dy.sign * getAxisY(off.dy));
+  }
+
+  // diagonal direction value with design size s.
+  static double getAxisBoth(double s) {
+    return s * _devicePixelRatio;
+  }
+}

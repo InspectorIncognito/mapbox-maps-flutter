@@ -301,3 +301,33 @@ extension StyleColorList on List {
     }
   }
 }
+
+extension StyleImage on StyleManager {
+  Future<void> addSvgImage(String name, String path, double width, double height, double ratio, {ColorFilter? colorFilter}) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint();
+
+    final image = await _getImage(path, width, height, colorFilter: colorFilter);
+    canvas.drawImage(image, Offset.zero, paint);
+
+    final markerImage = await pictureRecorder.endRecording().toImage(width.floor(), height.floor());
+    final data = await markerImage.toByteData(format: ui.ImageByteFormat.png);
+    var bytes =  data?.buffer.asUint8List();
+    if (bytes == null) {
+      return;
+    }
+
+    await addStyleImage(name, ratio, MbxImage(width: width.toInt(), height: height.toInt(), data: bytes), false, [], [], null);
+  }
+
+
+  Future<ui.Image> _getImage(String path, double width, double height, {ColorFilter? colorFilter}) async {
+    String data = await rootBundle.loadString(path);
+    DrawableRoot root = await svg.fromSvgString(data, data);
+    var picture = root.toPicture(clipToViewBox: true, size: ui.Size(width, height), colorFilter: colorFilter);
+    var image = await picture.toImage(width.floor(), height.floor());
+
+    return image;
+  }
+}

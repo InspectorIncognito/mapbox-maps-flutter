@@ -6,8 +6,8 @@ class SymbolLayer extends Layer {
   SymbolLayer({
     required id,
     visibility,
-    minZoom,
-    maxZoom,
+    double? minZoom,
+    double? maxZoom,
     required this.sourceId,
     this.sourceLayer,
     this.iconAllowOverlap,
@@ -64,6 +64,7 @@ class SymbolLayer extends Layer {
     this.textOpacity,
     this.textTranslate,
     this.textTranslateAnchor,
+    this.filter,
   }) : super(
             id: id, visibility: visibility, maxZoom: maxZoom, minZoom: minZoom);
 
@@ -237,6 +238,8 @@ class SymbolLayer extends Layer {
 
   /// Controls the frame of reference for `text-translate`.
   TextTranslateAnchor? textTranslateAnchor;
+
+  dynamic filter;
 
   @override
   String _encode() {
@@ -436,6 +439,9 @@ class SymbolLayer extends Layer {
     }
     if (maxZoom != null) {
       properties["maxzoom"] = maxZoom!;
+    }
+    if (filter != null) {
+      properties["filter"] = filter!;
     }
 
     return json.encode(properties);
