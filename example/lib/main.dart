@@ -20,7 +20,7 @@ import 'point_annotations.dart';
 import 'projection.dart';
 import 'style.dart';
 import 'gestures.dart';
-import 'transapp.dart';
+import 'transapp_example/transapp.dart';
 import 'utils.dart';
 
 final List<ExamplePage> _allPages = <ExamplePage>[

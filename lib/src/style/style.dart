@@ -303,6 +303,10 @@ extension StyleColorList on List {
 }
 
 extension StyleImage on StyleManager {
+  Future<void> addImage(String name, MbxImage data, double ratio) async {
+    await addStyleImage(name, ratio, data, false, [], [], null);
+  }
+
   Future<void> addSvgImage(String name, String path, double width, double height, double ratio, {ColorFilter? colorFilter}) async {
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
@@ -320,7 +324,6 @@ extension StyleImage on StyleManager {
 
     await addStyleImage(name, ratio, MbxImage(width: width.toInt(), height: height.toInt(), data: bytes), false, [], [], null);
   }
-
 
   Future<ui.Image> _getImage(String path, double width, double height, {ColorFilter? colorFilter}) async {
     String data = await rootBundle.loadString(path);

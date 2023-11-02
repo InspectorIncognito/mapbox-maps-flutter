@@ -253,6 +253,10 @@ class MapEvents {
   /// └── cancelled - Boolean
   /// ```
   static const String RESOURCE_REQUEST = "resource-request";
+
+  static const String MOVE_BEGIN = "move-begin";
+
+  static const String MOVE_END = "move-end";
 }
 
 /// The class for camera-changed event in Observer

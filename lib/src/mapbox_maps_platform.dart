@@ -26,6 +26,8 @@ class _MapboxMapsPlatform {
       ArgumentCallbacks<StyleImageMissingEventData>();
   final onStyleImageUnusedPlatform =
       ArgumentCallbacks<StyleImageUnusedEventData>();
+  final onMoveBeginPlatform = ArgumentCallbacks<String>();
+  final onMoveEndPlatform = ArgumentCallbacks<String>();
 
   final int _channelSuffix = _suffixesRegistry.getSuffix();
   late MethodChannel _channel;
@@ -48,6 +50,12 @@ class _MapboxMapsPlatform {
     var eventType = call.method.split("#")[1];
     observers(Event(type: eventType, data: call.arguments));
     switch (eventType) {
+      case MapEvents.MOVE_BEGIN:
+        onMoveBeginPlatform("");
+        break;
+      case MapEvents.MOVE_END:
+        onMoveEndPlatform("");
+        break;
       case MapEvents.STYLE_LOADED:
         onStyleLoadedPlatform(
             StyleLoadedEventData.fromJson(jsonDecode(call.arguments)));

@@ -1,13 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:mapbox_maps_example/transapp_example/extensions.dart';
+import 'package:mapbox_maps_example/transapp_example/image_builder.dart';
+import 'package:mapbox_maps_example/transapp_example/loading_layer.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:turf/turf.dart' as turf;
 
-import 'main.dart';
-import 'page.dart';
-import 'utils.dart';
+import '../main.dart';
+import '../page.dart';
+import '../utils.dart';
 
 class TransappPage extends ExamplePage {
   TransappPage() : super(const Icon(Icons.adb), 'Transapp');
@@ -31,12 +33,16 @@ class TransappWidgetState extends State<TransappWidget> {
 
   final defaultEdgeInsets = MbxEdgeInsets(top: 0, left: 0, bottom: 0, right: 0);
 
+  void _onMapIdle(MapIdleEventData mapIdleEventData) {
+
+  }
+
   _onMapCreated(MapboxMap mapboxMap) async {
     this.mapboxMap = mapboxMap;
 
     var collection =  [
       MapFeature.fromPoint(id: "stop-1", latitude: -33.452585034903954, longitude: -70.57163721695412)
-          .addProperty("image-name", "stop").addProperty("selected", false).addProperty("mode", 1),
+          .addProperty("image-name", "bus").addProperty("selected", false).addProperty("mode", 1),
       MapFeature.fromPoint(id: "stop-2", latitude: -33.45273711877396, longitude: -70.5709891098905)
           .addProperty("image-name", "stop").addProperty("selected", false).addProperty("mode", 1),
       MapFeature.fromPoint(id: "stop-3", latitude: -33.45362426936657, longitude: -70.57124227671223)
@@ -66,6 +72,13 @@ class TransappWidgetState extends State<TransappWidget> {
       "assets/svg/map_metro_station.svg",
       SizeUtil.getAxisX(30),
       SizeUtil.getAxisY(33),
+      SizeUtil.devicePixelRatio,
+    );
+
+    var rightImage = await PredictionImageBuilder.get();
+    await mapboxMap.style.addImage(
+      "bus",
+      MbxImage(width: SizeUtil.getAxisX(68).floor(), height: SizeUtil.getAxisY(39).floor(), data: rightImage!),
       SizeUtil.devicePixelRatio,
     );
 
@@ -103,7 +116,25 @@ class TransappWidgetState extends State<TransappWidget> {
       ),
     );
 
+    var loadingLayer = LoadingLayer(mapboxMap, id: "example");
+    loadingLayer.init();
+
+    GeoJsonSource lineSource = GeoJsonSource(id: 'arrival-line-source', data: json.encode(LineString(coordinates: [])));
+    LineLayer lineLayer = LineLayer(
+      id: 'arrival-line-layer',
+      sourceId: lineSource.id,
+      lineCap: LineCap.ROUND,
+      lineJoin: LineJoin.ROUND,
+      lineWidth: 4.0,
+      lineOpacity: 1.0,
+    );
+    await mapboxMap.style.addSource(lineSource);
+    await mapboxMap.style.addLayer(lineLayer);
+
+
     mapboxMap.setOnMapTapListener((coordinate) async {
+      loadingLayer.stopLoad();
+      loadingLayer.startLoad(LatLng(coordinate.x, coordinate.y));
       final ScreenCoordinate conv = await mapboxMap.pixelForCoordinate(
         turf.Point(coordinates: turf.Position(coordinate.y, coordinate.x,),).toJson(),
       );
@@ -120,8 +151,18 @@ class TransappWidgetState extends State<TransappWidget> {
         print("click: ${queryRes.feature["id"]}");
         var feature = collection.firstWhereOrNull((element) => element.id == queryRes.feature["id"]);
         if (feature != null) {
+          final line = LineString(coordinates: [
+            Position(-70.57149621803848, -33.44801846800802),
+            Position(-70.57076665718871, -33.4535327202852),
+            Position(-70.56516620478328, -33.45299563320278),
+            Position(-70.56437227091465, -33.45707741165431)
+          ]);
+          await lineSource.updateGeoJSON(json.encode(line));
+          await mapboxMap.style.setStyleLayerProperty(lineLayer.id, "line-color", HexColor.fromHex("#521921").value.toRGBA());
+
           var geometry = feature.geometry as PointGeometry?;
           if (geometry != null) {
+            loadingLayer.stopLoad();
             mapboxMap.flyTo(
                 CameraOptions(
                   center: Point(coordinates: Position(geometry.longitude, geometry.latitude)).toJson(),
@@ -131,6 +172,8 @@ class TransappWidgetState extends State<TransappWidget> {
                 null);
           }
         }
+      } else {
+        await lineSource.updateGeoJSON(json.encode(LineString(coordinates: [])));
       }
     });
   }
@@ -159,21 +202,5 @@ class TransappWidgetState extends State<TransappWidget> {
         ],
       ),
     );
-  }
-}
-
-extension ListFirstOrNull<T> on List<T> {
-  T? firstWhereOrNull(bool Function(T element) test) {
-    for (T element in this) {
-      if (test(element)) return element;
-    }
-    return null;
-  }
-
-  T? firstOrNull() {
-    if (isNotEmpty) {
-      return first;
-    }
-    return null;
   }
 }

@@ -42,12 +42,8 @@ class MapWidget extends StatefulWidget {
     if (onStyleLoadedListener != null) {
       _eventTypes.add(MapEvents.STYLE_LOADED);
     }
-    if (onCameraChangeListener != null) {
-      _eventTypes.add(MapEvents.CAMERA_CHANGED);
-    }
-    if (onMapIdleListener != null) {
-      _eventTypes.add(MapEvents.MAP_IDLE);
-    }
+    _eventTypes.add(MapEvents.CAMERA_CHANGED);
+    _eventTypes.add(MapEvents.MAP_IDLE);
     if (onMapLoadedListener != null) {
       _eventTypes.add(MapEvents.MAP_LOADED);
     }

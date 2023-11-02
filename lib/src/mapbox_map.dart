@@ -29,21 +29,27 @@ class MapboxMap extends ChangeNotifier {
         onStyleLoadedListener?.call(argument);
       });
     }
-    if (onCameraChangeListener != null) {
-      _mapboxMapsPlatform.onCameraChangeListenerPlatform.add((argument) {
-        onCameraChangeListener?.call(argument);
+    _mapboxMapsPlatform.onCameraChangeListenerPlatform.add((argument) {
+      if (Platform.isIOS) {
+        _isCameraMoving = true;
+      }
+      onCameraChangeListener?.call(argument);
+      getCameraState().then((value) {
+        Iterable coordinates = (value.center["coordinates"]) as Iterable? ?? [];
+        _cameraPosition = CameraPosition(
+            target: LatLng(coordinates.toList()[1], coordinates.toList()[0]),
+            bearing: value.bearing,
+            zoom: value.zoom,
+            tilt: value.pitch
+        );
       });
-    }
-    if (onMapIdleListener != null) {
-      _mapboxMapsPlatform.onMapIdlePlatform.add((argument) {
-        onMapIdleListener?.call(argument);
-      });
-    }
-    if (onMapLoadedListener != null) {
-      _mapboxMapsPlatform.onMapLoadedPlatform.add((argument) {
-        onMapLoadedListener?.call(argument);
-      });
-    }
+    });
+    _mapboxMapsPlatform.onMapLoadedPlatform.add((argument) {
+      if (Platform.isIOS) {
+        _isCameraMoving = false;
+      }
+      onMapLoadedListener?.call(argument);
+    });
     if (onMapLoadErrorListener != null) {
       _mapboxMapsPlatform.onMapLoadErrorPlatform.add((argument) {
         onMapLoadErrorListener?.call(argument);
@@ -89,6 +95,12 @@ class MapboxMap extends ChangeNotifier {
         onStyleImageUnusedListener?.call(argument);
       });
     }
+    _mapboxMapsPlatform.onMoveBeginPlatform.add((argument) {
+      _isCameraMoving = true;
+    });
+    _mapboxMapsPlatform.onMoveEndPlatform.add((argument) {
+      _isCameraMoving = false;
+    });
     _setupGestures();
   }
 
@@ -184,6 +196,14 @@ class MapboxMap extends ChangeNotifier {
   /// The interface to access the attribution settings.
   late AttributionSettingsInterface attribution =
       AttributionSettingsInterface(binaryMessenger: _proxyBinaryMessenger);
+
+  /// Returns the most recent camera position reported by the platform side.
+  CameraPosition? get cameraPosition => _cameraPosition;
+  CameraPosition? _cameraPosition;
+
+  /// True if the map camera is currently moving.
+  bool get isCameraMoving => _isCameraMoving;
+  bool _isCameraMoving = false;
 
   OnMapTapListener? onMapTapListener;
   OnMapLongTapListener? onMapLongTapListener;
@@ -647,4 +667,84 @@ class _GestureListener extends GestureListener {
   void onScroll(ScreenCoordinate coordinate) {
     onMapScrollListener?.call(coordinate);
   }
+}
+
+class CameraPosition {
+  const CameraPosition({
+    this.bearing = 0.0,
+    required this.target,
+    this.tilt = 0.0,
+    this.zoom = 0.0,
+  });
+
+  /// The camera's bearing in degrees, measured clockwise from north.
+  ///
+  /// A bearing of 0.0, the default, means the camera points north.
+  /// A bearing of 90.0 means the camera points east.
+  final double bearing;
+
+  /// The geographical location that the camera is pointing at.
+  final LatLng target;
+
+  /// The angle, in degrees, of the camera angle from the nadir.
+  ///
+  /// A tilt of 0.0, the default and minimum supported value, means the camera
+  /// is directly facing the Earth.
+  ///
+  /// The maximum tilt value depends on the current zoom level. Values beyond
+  /// the supported range are allowed, but on applying them to a map they will
+  /// be silently clamped to the supported range.
+  final double tilt;
+
+  /// The zoom level of the camera.
+  ///
+  /// A zoom of 0.0, the default, means the screen width of the world is 256.
+  /// Adding 1.0 to the zoom level doubles the screen width of the map. So at
+  /// zoom level 3.0, the screen width of the world is 2³x256=2048.
+  ///
+  /// Larger zoom levels thus means the camera is placed closer to the surface
+  /// of the Earth, revealing more detail in a narrower geographical region.
+  ///
+  /// The supported zoom level range depends on the map data and device. Values
+  /// beyond the supported range are allowed, but on applying them to a map they
+  /// will be silently clamped to the supported range.
+  final double zoom;
+
+  dynamic toMap() => <String, dynamic>{
+    'bearing': bearing,
+    'target': target.toJson(),
+    'tilt': tilt,
+    'zoom': zoom,
+  };
+
+  @visibleForTesting
+  static CameraPosition? fromMap(dynamic json) {
+    if (json == null) {
+      return null;
+    }
+    return CameraPosition(
+      bearing: json['bearing'],
+      target: LatLng._fromJson(json['target']),
+      tilt: json['tilt'],
+      zoom: json['zoom'],
+    );
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (identical(this, other)) return true;
+    if (runtimeType != other.runtimeType) return false;
+    final CameraPosition typedOther = other;
+    return bearing == typedOther.bearing &&
+        target == typedOther.target &&
+        tilt == typedOther.tilt &&
+        zoom == typedOther.zoom;
+  }
+
+  @override
+  int get hashCode => hashValues(bearing, target, tilt, zoom);
+
+  @override
+  String toString() =>
+      'CameraPosition(bearing: $bearing, target: $target, tilt: $tilt, zoom: $zoom)';
 }

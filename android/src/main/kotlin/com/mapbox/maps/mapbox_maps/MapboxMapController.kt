@@ -1,14 +1,20 @@
 package com.mapbox.maps.mapbox_maps
 
 import android.content.Context
+import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.*
 import com.mapbox.maps.*
+import com.mapbox.maps.Event
 import com.mapbox.maps.mapbox_maps.annotation.AnnotationController
 import com.mapbox.maps.pigeons.FLTMapInterfaces
 import com.mapbox.maps.pigeons.FLTSettings
+import com.mapbox.maps.plugin.gestures.OnMoveListener
+import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -61,12 +67,31 @@ class MapboxMapController(
     FLTSettings.CompassSettingsInterface.setup(proxyBinaryMessenger, compassController)
     methodChannel = MethodChannel(proxyBinaryMessenger, "plugins.flutter.io")
     methodChannel.setMethodCallHandler(this)
+    var lastClickTime: Long = 0
     mapboxMap.subscribe(
       { event ->
-        methodChannel.invokeMethod(getEventMethodName(event.type), event.data.toJson())
+        if (event.type == MapEvents.CAMERA_CHANGED) {
+          if (SystemClock.elapsedRealtime() - lastClickTime > 50L) {
+            methodChannel.invokeMethod(getEventMethodName(event.type), event.data.toJson())
+          }
+          lastClickTime = SystemClock.elapsedRealtime()
+        } else {
+          methodChannel.invokeMethod(getEventMethodName(event.type), event.data.toJson())
+        }
       },
       eventTypes
     )
+    mapboxMap.addOnMoveListener(object: OnMoveListener {
+      override fun onMoveBegin(detector: MoveGestureDetector) {
+        methodChannel.invokeMethod("event#move-begin", "")
+      }
+      override fun onMove(detector: MoveGestureDetector): Boolean {
+        return false
+      }
+      override fun onMoveEnd(detector: MoveGestureDetector) {
+        methodChannel.invokeMethod("event#move-end", "")
+      }
+    })
   }
 
   override fun getView(): View {
