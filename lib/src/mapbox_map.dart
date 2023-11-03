@@ -30,7 +30,7 @@ class MapboxMap extends ChangeNotifier {
       });
     }
     _mapboxMapsPlatform.onCameraChangeListenerPlatform.add((argument) {
-      if (Platform.isIOS) {
+      if (Platform.isIOS && !_isCameraMoving) {
         _isCameraMoving = true;
       }
       onCameraChangeListener?.call(argument);
@@ -44,12 +44,17 @@ class MapboxMap extends ChangeNotifier {
         );
       });
     });
-    _mapboxMapsPlatform.onMapLoadedPlatform.add((argument) {
-      if (Platform.isIOS) {
+    _mapboxMapsPlatform.onMapIdlePlatform.add((argument) {
+      if (Platform.isIOS && _isCameraMoving) {
         _isCameraMoving = false;
       }
-      onMapLoadedListener?.call(argument);
+      onMapIdleListener?.call(argument);
     });
+    if (onMapLoadedListener != null) {
+      _mapboxMapsPlatform.onMapLoadedPlatform.add((argument) {
+        onMapLoadedListener?.call(argument);
+      });
+    }
     if (onMapLoadErrorListener != null) {
       _mapboxMapsPlatform.onMapLoadErrorPlatform.add((argument) {
         onMapLoadErrorListener?.call(argument);

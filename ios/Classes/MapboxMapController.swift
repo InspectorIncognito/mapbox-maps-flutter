@@ -129,6 +129,9 @@ class MapboxMapController: NSObject, FlutterPlatformView {
                                       arguments: self.convertDictionaryToString(dict: eventData))
         })
         mapboxMap.subscribe(observer, events: eventTypes)
+        mapboxMap.onNext(event: .mapIdle) { (event) in
+            print("map idle")
+        }
     }
 
     func onMethodCall(methodCall: FlutterMethodCall, result: @escaping FlutterResult) {

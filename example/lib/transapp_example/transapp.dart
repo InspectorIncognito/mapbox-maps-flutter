@@ -119,7 +119,7 @@ class TransappWidgetState extends State<TransappWidget> {
     var loadingLayer = LoadingLayer(mapboxMap, id: "example");
     loadingLayer.init();
 
-    GeoJsonSource lineSource = GeoJsonSource(id: 'arrival-line-source', data: json.encode(LineString(coordinates: [])));
+    GeoJsonSource lineSource = GeoJsonSource(id: 'arrival-line-source', data: json.encode(FeatureCollection()));
     LineLayer lineLayer = LineLayer(
       id: 'arrival-line-layer',
       sourceId: lineSource.id,
@@ -173,7 +173,7 @@ class TransappWidgetState extends State<TransappWidget> {
           }
         }
       } else {
-        await lineSource.updateGeoJSON(json.encode(LineString(coordinates: [])));
+        await lineSource.updateGeoJSON(json.encode(FeatureCollection()));
       }
     });
   }
