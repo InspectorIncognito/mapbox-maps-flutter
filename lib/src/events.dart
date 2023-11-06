@@ -271,6 +271,8 @@ class CameraChangedEventData {
   CameraChangedEventData.fromJson(Map<String, dynamic> json)
       : begin = json['begin'],
         end = json['end'];
+
+  CameraChangedEventData(this.begin, this.end);
 }
 
 /// The class for map-idle event in Observer

@@ -47,6 +47,7 @@ class MapboxMap extends ChangeNotifier {
     _mapboxMapsPlatform.onMapIdlePlatform.add((argument) {
       if (Platform.isIOS && _isCameraMoving) {
         _isCameraMoving = false;
+        onCameraChangeListener?.call(CameraChangedEventData(0, 0));
       }
       onMapIdleListener?.call(argument);
     });
