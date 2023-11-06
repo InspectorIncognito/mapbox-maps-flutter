@@ -590,8 +590,17 @@ class MapboxMap extends ChangeNotifier {
 
   /// Fly the map camera to a given camera options.
   Future<void> flyTo(CameraOptions cameraOptions,
-          MapAnimationOptions? mapAnimationOptions) =>
-      _animationManager.flyTo(cameraOptions, mapAnimationOptions);
+          MapAnimationOptions? mapAnimationOptions) async {
+    _isCameraMoving = true;
+    var duration = mapAnimationOptions?.duration ?? 200;
+    var options = MapAnimationOptions(
+      duration: duration,
+      startDelay: mapAnimationOptions?.startDelay,
+    );
+    _animationManager.flyTo(cameraOptions, options);
+    await Future.delayed(Duration(milliseconds: duration + 25));
+    _isCameraMoving = false;
+  }
 
   /// Pitch the map by with optional animation.
   Future<void> pitchBy(
