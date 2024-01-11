@@ -327,9 +327,8 @@ extension StyleImage on StyleManager {
 
   Future<ui.Image> _getImage(String path, double width, double height, {ColorFilter? colorFilter}) async {
     String data = await rootBundle.loadString(path);
-    DrawableRoot root = await svg.fromSvgString(data, data);
-    var picture = root.toPicture(clipToViewBox: true, size: ui.Size(width, height), colorFilter: colorFilter);
-    var image = await picture.toImage(width.floor(), height.floor());
+    final PictureInfo pictureInfo = await vg.loadPicture(SvgStringLoader(data), null);
+    var image = await pictureInfo.picture.toImage(width.floor(), height.floor());
 
     return image;
   }
