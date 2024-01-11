@@ -312,7 +312,7 @@ extension StyleImage on StyleManager {
     final Canvas canvas = Canvas(pictureRecorder);
     final Paint paint = Paint();
 
-    final image = await _getImage(path, width, height, colorFilter: colorFilter);
+    final image = await ImageUtils.getImageFromSvg(path, width, height, colorFilter: colorFilter);
     canvas.drawImage(image, Offset.zero, paint);
 
     final markerImage = await pictureRecorder.endRecording().toImage(width.floor(), height.floor());
@@ -323,13 +323,5 @@ extension StyleImage on StyleManager {
     }
 
     await addStyleImage(name, ratio, MbxImage(width: width.toInt(), height: height.toInt(), data: bytes), false, [], [], null);
-  }
-
-  Future<ui.Image> _getImage(String path, double width, double height, {ColorFilter? colorFilter}) async {
-    String data = await rootBundle.loadString(path);
-    final PictureInfo pictureInfo = await vg.loadPicture(SvgStringLoader(data), null);
-    var image = await pictureInfo.picture.toImage(width.floor(), height.floor());
-
-    return image;
   }
 }

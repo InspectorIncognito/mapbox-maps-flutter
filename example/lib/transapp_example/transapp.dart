@@ -58,6 +58,7 @@ class TransappWidgetState extends State<TransappWidget> {
       SizeUtil.getAxisX(22),
       SizeUtil.getAxisY(34),
       SizeUtil.devicePixelRatio,
+      colorFilter: ColorFilter.mode(HexColor.fromHex("#7dc242"), BlendMode.modulate),
     );
     await mapboxMap.style.addSvgImage(
       "metro",
