@@ -59,8 +59,8 @@ final class _MapEvents {
     }
 
     // let the native side know which events we are interested in
-    _channel.invokeMethod(
-        "subscribeToEvents", newEventTypes.map((e) => e.index).toList());
+    // _channel.invokeMethod(
+    //     "subscribeToEvents", newEventTypes.map((e) => e.index).toList());
 
     subscribedEventTypes = newEventTypes;
   }
